@@ -30,7 +30,7 @@ class PostViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
@@ -44,13 +44,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         if not self.request.user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         post = Post.objects.get(id=self.kwargs.get("post_id"))
-        serializer.save(author=self.request.user, post = post)
+        serializer.save(author=self.request.user, post=post)
 
     def perform_update(self, serializer):
         post = Post.objects.get(id=self.kwargs.get("post_id"))
         if serializer.instance.author != self.request.user:
             raise PermissionDenied('Изменение чужого контента запрещено!')
-        serializer.save(author=self.request.user, post = post)
+        serializer.save(author=self.request.user, post=post)
 
     def perform_destroy(self, instance):
         if instance.author != self.request.user:
