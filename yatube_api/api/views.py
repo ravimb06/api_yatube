@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
@@ -9,7 +10,6 @@ from .serializers import PostSerializer, GroupSerializer, CommentSerializer
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    author = serializers.StringRelatedField(read_only=True)
 
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:
@@ -36,14 +36,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        post = Post.objects.get(id=self.kwargs.get("post_id"))
-        queryset = Comment.objects.filter(post=post)
+        post = get_object_or_404(Post, id=self.kwargs.get("post_id"))
+        queryset = post.comments.all()
         return queryset
 
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        post = Post.objects.get(id=self.kwargs.get("post_id"))
+        post = get_object_or_404(Post, id=self.kwargs.get("post_id"))
         serializer.save(author=self.request.user, post=post)
 
     def perform_update(self, serializer):
